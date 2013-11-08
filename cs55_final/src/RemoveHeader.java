@@ -7,14 +7,20 @@ import java.io.IOException;
 
 public class RemoveHeader {
 	
-	public RemoveHeader(String control_path, String test_path, DataOutputStream test_out) {
+	public RemoveHeader(String control_path, String test_path, DataOutputStream test_out, boolean stripTail) {
 
-		this.compareFiles(control_path, test_path, test_out);
+		this.compareFiles(control_path, test_path, test_out, stripTail);
 	}
 	
-	public void compareFiles(String control_path, String test_path, DataOutputStream test_out) {
+	public void stringTailer(String control_path, String test_path, DataOutputStream test_out) {
+		
+	}
+	
+	public void compareFiles(String control_path, String test_path, DataOutputStream test_out, boolean stripTail) {
 		FileInputStream control_fin = null;
 		FileInputStream test_fin = null;
+		int size = 0;
+		
 
 		try {
 			control_fin = new FileInputStream(control_path);
@@ -22,6 +28,13 @@ public class RemoveHeader {
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		try {
+			size = test_fin.available();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		DataInputStream control_in = new DataInputStream(control_fin);
 		DataInputStream test_in = new DataInputStream(test_fin);
@@ -39,11 +52,18 @@ public class RemoveHeader {
 				}
 				else {
 					valid_data = true;
+					count++;
 				}
 			}
 			
 			while((test = test_in.readByte()) != null) {
-				test_out.writeByte(test);
+				if (count > (size - 3) ) {
+					break;
+				}
+				else {
+					test_out.writeByte(test);
+				}
+				count++;
 			}
 			
 			control_in.close();
@@ -59,7 +79,7 @@ public class RemoveHeader {
 	public static void main(String args[]) {
 		
 		FileOutputStream test_fout = null;
-		String output_path = "C:\\Users\\Bulbwheatie\\Desktop\\test2.txt";
+		String output_path = "C:\\Users\\Bulbwheatie\\Documents\\CS 55\\final_project\\CS55\\test.txt";
 
 		try {
 			test_fout = new FileOutputStream(output_path);
@@ -72,9 +92,10 @@ public class RemoveHeader {
 		String control_path = "C:\\Users\\Bulbwheatie\\Documents\\CS 55\\images\\1";
 		String base_path= "C:\\Users\\Bulbwheatie\\Documents\\CS 55\\images\\";
 		int start_file = 2;
+		//int max_file = 3;
 		int max_file = 1267;
 		
-		for (int i = start_file; i < max_file; i++) {
+		for (int i = start_file; i <= max_file; i++) {
 			String test_path = base_path + i;
 			System.out.println("File: " + i);
 			try {
@@ -83,7 +104,13 @@ public class RemoveHeader {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			RemoveHeader test = new RemoveHeader(control_path, test_path, test_out);
+			
+			if (i != max_file) {
+				RemoveHeader test = new RemoveHeader(control_path, test_path, test_out, true);		
+			}
+			else {
+				RemoveHeader test = new RemoveHeader(control_path, test_path, test_out, false);
+			}
 		}
 		
 		
